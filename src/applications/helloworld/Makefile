@@ -17,6 +17,7 @@ include $(SDK_RTSMART_SRC_DIR)/libs/mk/libnncase.mk
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/librtsmart_hal.mk
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/lib3rdparty.mk
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/libopenblas.mk
+include $(SDK_RTSMART_SRC_DIR)/libs/mk/librtsmart.mk
 include $(SDK_RTSMART_SRC_DIR)/libs/mk/libhexchip.mk
 
 SDK_APPS_IMAGE_DIR ?= $(shell pwd)
