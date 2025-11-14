@@ -5,7 +5,6 @@ export SDK_SRC_ROOT_DIR := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 include $(SDK_SRC_ROOT_DIR)/tools/mkenv.mk
 
 include $(SDK_TOOLS_DIR)/kconfig.mk
-include $(SDK_TOOLS_DIR)/genimage.mk
 
 ifeq ($(strip $(filter $(MAKECMDGOALS),clean distclean list_def list-def dl_toolchain)),)
 $(SDK_SRC_ROOT_DIR)/.config: $(KCONF)
@@ -90,12 +89,9 @@ rtsmart-distclean:
 rtsmart-menuconfig:
 	@$(MAKE) -C $(SDK_RTSMART_SRC_DIR) menuconfig
 
+
 .PHONY: opensbi opensbi-clean opensbi-distclean
 opensbi: .autoconf rtsmart
-ifeq ($(CONFIG_RTSMART_ENABLE_ROMFS),y)
-	@ROMFS_DIR=$(SDK_RTSMART_SRC_DIR)/rtsmart/kernel/bsp/maix3/romfs/ python3 $(SDK_TOOLS_DIR)/copy_romfs.py || exit $?;
-	@$(MAKE) -C $(SDK_RTSMART_SRC_DIR) kernel || exit $?;
-endif
 	@$(MAKE) -C $(SDK_OPENSBI_SRC_DIR) all
 opensbi-clean:
 	@$(MAKE) -C $(SDK_OPENSBI_SRC_DIR) clean
@@ -108,6 +104,7 @@ canmv: .autoconf
 ifeq ($(CONFIG_SDK_ENABLE_CANMV),y)
 	@$(MAKE) -C $(SDK_CANMV_SRC_DIR) all
 endif
+
 canmv-clean:
 ifeq ($(CONFIG_SDK_ENABLE_CANMV),y)
 	@$(MAKE) -C $(SDK_CANMV_SRC_DIR) clean
@@ -144,20 +141,17 @@ rm_image:
 	@rm -rf $(SDK_BUILD_IMAGES_DIR)
 
 .PHONY: all
-all: $(TOOL_GENIMAGE) rm_image uboot rtsmart canmv app opensbi
+all: rm_image uboot rtsmart opensbi canmv app 
+	@python3 $(SDK_TOOLS_DIR)/gen_image_rtapp.py
 	@$(SDK_TOOLS_DIR)/gen_image.sh
 	@echo "Build K230 done, board $(CONFIG_BOARD), config $(MK_LIST_DEFCONFIG)"
 
-ifeq ($(CONFIG_RTSMART_ENABLE_ROMFS),y)
-	@rm -rf $(SDK_RTSMART_SRC_DIR)/rtsmart/kernel/bsp/maix3/romfs/
-endif
-
 .PHONY: clean
-clean: kconfig-clean $(TOOL_GENIMAGE)-clean uboot-clean rtsmart-clean opensbi-clean canmv-clean app-clean
+clean: kconfig-clean uboot-clean rtsmart-clean opensbi-clean canmv-clean app-clean
 	@echo "Clean done."
 
 .PHONY: distclean
-distclean: kconfig-distclean $(TOOL_GENIMAGE)-distclean uboot-distclean rtsmart-distclean opensbi-distclean canmv-distclean app-distclean
+distclean: kconfig-distclean uboot-distclean rtsmart-distclean opensbi-distclean canmv-distclean app-distclean
 	$(call del_mark)
 	@rm -rf $(SDK_BUILD_DIR)
 	@rm -rf $(SDK_SRC_ROOT_DIR)/.config

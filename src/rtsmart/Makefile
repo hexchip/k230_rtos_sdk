@@ -139,13 +139,7 @@ endif
 
 endif
 
-ALL_TARGETS := .parse_config mpp libs examples
-
-ifneq ($(CONFIG_RTSMART_ENABLE_ROMFS),y)
-ALL_TARGETS += kernel
-endif
-
-all: $(ALL_TARGETS)
+all: .parse_config mpp kernel libs examples
 	@echo "Copy sensor configs from $(SDK_RTSMART_SRC_DIR)/rtsmart/userapps/root/bin/ to ${SDK_BUILD_IMAGES_DIR}/bin/"
 
 ifeq ($(CONFIG_MPP_ENABLE_SENSOR_GC2093),y)
@@ -222,6 +216,10 @@ arduino-sdk:
 	@rm -rf $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/lib/**
 	@rm -rf $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/include/**
 
+	# Copy autoconf.h
+	@mkdir -p $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/include/
+	@cp -rf $(SDK_SRC_ROOT_DIR)/include/generated/autoconf.h $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/include/
+
 	# Copy 3rd-party include and libraries
 	@mkdir -p $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/3rd_party/include
 	@mkdir -p $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/3rd_party/lib
@@ -274,6 +272,12 @@ arduino-sdk:
 	# Copy nncase include and libraries
 	@mkdir -p $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/nncase/
 	@cp -rf $(SDK_RTSMART_SRC_DIR)/libs/nncase/riscv64/* $(SDK_ARDUINO_SDK_BUILD_DIR)/cores/k230/sdk/nncase/
+
+	# Generate bin.vfat
+	@rm -rf $(SDK_ARDUINO_SDK_BUILD_DIR)/variants/$(CONFIG_BOARD)/rtsmart/**
+	@mkdir -p $(SDK_ARDUINO_SDK_BUILD_DIR)/variants/$(CONFIG_BOARD)/rtsmart
+
+	@python3 $(SDK_TOOLS_DIR)/gen_image_vfat.py -o $(SDK_ARDUINO_SDK_BUILD_DIR)/variants/$(CONFIG_BOARD)/rtsmart/
 
 	@echo "Generate Arduino-core sdk done."
 
