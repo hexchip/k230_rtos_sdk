@@ -8,6 +8,8 @@ include $(SDK_SRC_ROOT_DIR)/tools/mkenv.mk
 
 include $(SDK_APPS_SRC_DIR)/toolchain.mk
 
+include $(SDK_SRC_ROOT_DIR)/.config
+
 LIB_CFLAGS :=
 LIB_LDFLAGS :=
 
@@ -25,7 +27,7 @@ SDK_APPS_IMAGE_DIR ?= $(shell pwd)
 BIN := $(SDK_APPS_IMAGE_DIR)/helloworld
 BUILD = ${SDK_APPS_BUILD_DIR}/helloworld/
 
-SRC_DIRS :=
+SRC_DIRS := .
 
 SFILES :=
 SFILES_EXCLUDE :=
@@ -35,10 +37,8 @@ CFILES :=
 CFILES_EXCLUDE :=
 CFLAGS :=
 
-CFILES += main.c
-
 CFLAGS := -march=rv64imafdcv -mabi=lp64d -mcmodel=medany
-CFLAGS += -std=gnu99 -fdata-sections -ffunction-sections
+CFLAGS += -std=gnu99 -fdata-sections -ffunction-sections -U__linux__ -D__RTTHREAD__
 
 CFLAGS += -I$(SDK_SRC_ROOT_DIR)/include/generated
 CFLAGS += $(LIB_CFLAGS)
@@ -71,7 +71,7 @@ distclean: clean
 
 $(BIN): $(OBJS)
 	@echo [LD] $@
-	@$(CC) $^ -o $@ $(CFLAGS) $(LDFLAGS)
+	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	@$(STRIP) $@
 
 $(SOBJS) : $(BUILD)/%.o : %.S
@@ -93,3 +93,7 @@ $(OBJ_DIRS):
 	@mkdir -p $@
 
 sinclude $(DEPS)
+
+.PHONY: test
+test:
+	@echo $(LIB_LDFLAGS)
