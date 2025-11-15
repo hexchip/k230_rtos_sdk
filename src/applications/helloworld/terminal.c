@@ -154,7 +154,7 @@ static void* terminal_thread_entry(void *parameter) {
 
     fd_set rfds, efds;
     char buffer[256];
-    char stream_buffer[384];
+    // char stream_buffer[384];
     uint8_t poll_retry_count = 0;
     while (context->is_thread_runing) {
         printf("%s poll start\n", terminal->name);
@@ -192,8 +192,6 @@ static void* terminal_thread_entry(void *parameter) {
                 }
             }
 
-            printf("%s --------------test\n", terminal->name);
-
             if (is_need_break) {
                 printf("%s thread break!\n", terminal->name);
                 break;
@@ -211,13 +209,14 @@ static void* terminal_thread_entry(void *parameter) {
                         break;
                     }
                     else {
+                        // printf("tmt_write: %s |---\n", buffer, strlen(buffer));
                         // size_t stream_size = terminal_stream_memcpy(stream_buffer, buffer, read_size);
                         // printf("terminal_thread_entry: stream_size = %ld\n", stream_size);
-                        char log_buffer[384] = {0};
-                        // memcpy(log_buffer, stream_buffer, stream_size);
-                        memcpy(log_buffer, buffer, read_size);
-                        printf("tmt_write: %s |---\n", log_buffer);
-                        // tmt_write(vt, stream_buffer, stream_size);
+                        // char log_buffer[384] = {0};
+                        // // memcpy(log_buffer, stream_buffer, stream_size);
+                        // memcpy(log_buffer, buffer, read_size);
+                        // printf("tmt_write: %s |---\n", log_buffer);
+                        // // tmt_write(vt, stream_buffer, stream_size);
                         tmt_write(vt, buffer, read_size);
                     }
                 }
